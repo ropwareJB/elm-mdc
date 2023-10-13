@@ -15,6 +15,7 @@ module Internal.Select.Implementation exposing
     , subscriptions
     , value
     , view
+    , openMenu
     )
 
 import Browser.Dom
@@ -459,3 +460,6 @@ modifier modifier_ =
 blockName : String
 blockName =
     "mdc-select"
+
+openMenu : (Internal.Msg.Msg m -> m) -> Index -> m
+openMenu lift index = lift <| Internal.Msg.SelectMsg index <| OpenMenu "mdc-select__menu"

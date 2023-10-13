@@ -13,6 +13,7 @@ module Material.Select exposing
     , selected
     , outlined
     , fullWidth
+    , openMenu
     )
 
 {-| Select provides Material Design single-option select menus.
@@ -206,3 +207,6 @@ There should be only one option selected.
 selected : Lists.Property m
 selected =
     Select.selected
+
+openMenu : (Material.Msg m -> m) -> Index -> m
+openMenu = Select.openMenu
