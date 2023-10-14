@@ -14,6 +14,7 @@ module Material.Select exposing
     , outlined
     , fullWidth
     , openMenu
+    , toggleMenu
     )
 
 {-| Select provides Material Design single-option select menus.
@@ -210,3 +211,6 @@ selected =
 
 openMenu : (Material.Msg m -> m) -> Index -> m
 openMenu = Select.openMenu
+
+toggleMenu : (Material.Msg m -> m) -> Index -> m
+toggleMenu = Select.toggleMenu

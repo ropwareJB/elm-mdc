@@ -16,6 +16,7 @@ module Internal.Select.Implementation exposing
     , value
     , view
     , openMenu
+    , toggleMenu
     )
 
 import Browser.Dom
@@ -463,3 +464,6 @@ blockName =
 
 openMenu : (Internal.Msg.Msg m -> m) -> Index -> m
 openMenu lift index = lift <| Internal.Msg.SelectMsg index <| OpenMenu "mdc-select__menu"
+
+toggleMenu : (Internal.Msg.Msg m -> m) -> Index -> m
+toggleMenu lift index = lift <| Internal.Msg.SelectMsg index <| ToggleMenu
