@@ -5,6 +5,7 @@ module Internal.Options exposing
     , applyNativeControl
     , aria
     , attribute
+    , attributeM
     , autocomplete
     , autofocus
     , collect
@@ -20,6 +21,7 @@ module Internal.Options exposing
     , nativeControl
     , nop
     , on
+    , onAKeyDown
     , onBlur
     , onChange
     , onCheck
@@ -27,7 +29,6 @@ module Internal.Options exposing
     , onDoubleClick
     , onFocus
     , onInput
-    , onAKeyDown
     , onMouseDown
     , onMouseEnter
     , onMouseLeave
@@ -54,7 +55,7 @@ import Html.Attributes
 import Html.Events
 import Internal.Dispatch as Dispatch
 import Internal.Index exposing (Index)
-import Internal.Keyboard as Keyboard exposing (decodeMeta, decodeKey, decodeKeyCode)
+import Internal.Keyboard as Keyboard exposing (decodeKey, decodeKeyCode, decodeMeta)
 import Internal.Msg exposing (Msg(..))
 import Json.Decode as Decode exposing (Decoder)
 import String
@@ -116,7 +117,9 @@ collect1 opt acc =
 recollect : Summary c m -> List (Property c m) -> Summary c m
 recollect summary properties =
     let
-        reversed_summary = List.foldl collect1 summary properties
+        reversed_summary =
+            List.foldl collect1 summary properties
+
         new_summary =
             { classes = List.reverse reversed_summary.classes
             , css = List.reverse reversed_summary.css
@@ -126,7 +129,8 @@ recollect summary properties =
             , config = reversed_summary.config
             }
     in
-        new_summary
+    new_summary
+
 
 collect : c -> List (Property c m) -> Summary c m
 collect =
@@ -222,8 +226,10 @@ internalId id_ =
     option (\config -> { config | id_ = id_ })
 
 
-{- Use to set name attribute of an HTML control.
--}
+
+{- Use to set name attribute of an HTML control. -}
+
+
 name : String -> Property { c | name : Maybe String } m
 name value =
     option (\config -> { config | name = Just value })
@@ -384,6 +390,11 @@ attribute =
     Attribute << Html.Attributes.map never
 
 
+attributeM : Html.Attribute m -> Property c m
+attributeM =
+    Attribute
+
+
 on : String -> Decoder m -> Property c m
 on event decodeMessage =
     Listener event
@@ -403,25 +414,31 @@ on event decodeMessage =
 onAKeyDown : ( Int, String ) -> m -> Property c m
 onAKeyDown ( keyCode, keyName ) m =
     Listener "keydown" <|
-        ( Decode.map3
-              (\meta code key -> (meta, code, key))
-              decodeMeta decodeKeyCode decodeKey
-          |> Decode.andThen
-              (\({ shiftKey, altKey, ctrlKey, metaKey }, code, key) ->
-                   let
-                       found =
-                           code == keyCode && key == keyName &&
-                           not (altKey || ctrlKey || metaKey)
-                   in
-                       if found then
-                           Decode.succeed
-                                { message = m
-                                , preventDefault = True
-                                , stopPropagation = False
-                                }
-                       else
-                           Decode.fail ""
-              )
+        (Decode.map3
+            (\meta code key -> ( meta, code, key ))
+            decodeMeta
+            decodeKeyCode
+            decodeKey
+            |> Decode.andThen
+                (\( { shiftKey, altKey, ctrlKey, metaKey }, code, key ) ->
+                    let
+                        found =
+                            code
+                                == keyCode
+                                && key
+                                == keyName
+                                && not (altKey || ctrlKey || metaKey)
+                    in
+                    if found then
+                        Decode.succeed
+                            { message = m
+                            , preventDefault = True
+                            , stopPropagation = False
+                            }
+
+                    else
+                        Decode.fail ""
+                )
         )
 
 
@@ -535,10 +552,15 @@ dispatch lift =
         )
 
 
-{- Call view function when variable is a Just a
--}
+
+{- Call view function when variable is a Just a -}
+
+
 viewJust : Maybe a -> (a -> Html msg) -> Html msg
 viewJust value view =
     case value of
-        Just a -> view a
-        Nothing -> Html.text ""
+        Just a ->
+            view a
+
+        Nothing ->
+            Html.text ""

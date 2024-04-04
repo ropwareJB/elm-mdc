@@ -26,6 +26,7 @@ module Material.Options exposing
     , onSubmit
     , onBlur
     , onFocus
+    , attributeM
     )
 
 {-|
@@ -206,6 +207,18 @@ attribute =
     Internal.Options.attribute
 
 
+{-| Install arbitrary `Html.Attribute`s of type `Attribute m`.
+
+    styled Html.div
+        [ Options.attribute <| Html.title "title" ]
+        [ … ]
+
+-}
+attributeM : Html.Attribute m -> Property c m
+attributeM =
+    Internal.Options.attributeM
+
+
 {-| -}
 on : String -> Decoder m -> Property c m
 on =
@@ -269,6 +282,7 @@ onCheck =
 {-| See `onFocus` for additional information.
 
 The underlying implementation actually uses "focusout" instead of the "blur" event.
+
 -}
 onBlur : msg -> Property c msg
 onBlur =
